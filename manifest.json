@@ -26,7 +26,7 @@
     "default_title": "MISA Calendar"
   },
   "oauth2": {
-    "client_id": "your-google-client-id",
+    "client_id": "429950432093-tcd5pbva31e1lgk27udj9n78ghah3f7o.apps.googleusercontent.com",
     "scopes": [
       "https://www.googleapis.com/auth/calendar.events",
       "https://www.googleapis.com/auth/calendar.freebusy"
