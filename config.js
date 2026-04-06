@@ -2,12 +2,11 @@
 // Được inject vào trang MISA trước content.js (xem manifest.json)
 
 const MISA_CALENDAR_CONFIG = {
-  // Index của các input.dx-texteditor-input trên form MISA (từ trên xuống)
-  // 0: Loại lịch, 1: Ngày, 2: Giờ bắt đầu, 3: Thời lượng, 4: Địa điểm, 5: Phòng, 6: Mẫu đánh giá
-  fieldIndexes: {
-    date: 1,
-    startTime: 2,
-    duration: 3
+  // Label text của các field trên form MISA
+  fieldLabels: {
+    date: 'Ngày',
+    startTime: 'Giờ bắt đầu',
+    duration: 'Thời lượng (phút)'
   },
   defaultSummary: 'Phỏng vấn ứng viên',
   // Mapping: Tên phòng → Google Calendar Resource ID

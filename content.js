@@ -1,8 +1,16 @@
 // content.js - Inject panel "Check & Book Calendar" vào trang MISA
 
-function getMisaFieldValue(index) {
-  const inputs = document.querySelectorAll('.dx-texteditor-input');
-  return inputs[index] ? (inputs[index].value || inputs[index].textContent).trim() : null;
+function getMisaFieldByLabel(labelText) {
+  const labels = document.querySelectorAll('label');
+  for (const label of labels) {
+    if (label.textContent.trim() === labelText) {
+      // Tìm input gần nhất trong cùng parent container
+      const container = label.closest('[class*="field"], [class*="item"], [class*="row"], [class*="col"]') || label.parentElement;
+      const input = container ? container.querySelector('.dx-texteditor-input') : null;
+      return input ? (input.value || input.textContent).trim() : null;
+    }
+  }
+  return null;
 }
 
 function parseDateTime(dateStr, timeStr, durationMin) {
@@ -43,7 +51,7 @@ function createPanel() {
   if (document.getElementById('misa-calendar-panel')) return;
 
   const config = typeof MISA_CALENDAR_CONFIG !== 'undefined' ? MISA_CALENDAR_CONFIG : {};
-  const indexes = config.fieldIndexes || { date: 1, startTime: 2, duration: 3 };
+  const labels = config.fieldLabels || { date: 'Ngày', startTime: 'Giờ bắt đầu', duration: 'Thời lượng (phút)' };
   const roomMap = config.roomCalendarIds || {};
   const roomNames = Object.keys(roomMap);
 
@@ -98,9 +106,9 @@ function createPanel() {
 
   checkBtn.onclick = () => {
     const roomName = roomSelect.value;
-    const dateStr = getMisaFieldValue(indexes.date);
-    const timeStr = getMisaFieldValue(indexes.startTime);
-    const durationStr = getMisaFieldValue(indexes.duration);
+    const dateStr = getMisaFieldByLabel(labels.date);
+    const timeStr = getMisaFieldByLabel(labels.startTime);
+    const durationStr = getMisaFieldByLabel(labels.duration);
 
     if (!roomName) {
       showStatus(panel, 'Vui lòng chọn phòng họp', true);
@@ -137,9 +145,9 @@ function createPanel() {
 
   bookBtn.onclick = () => {
     const roomName = roomSelect.value;
-    const dateStr = getMisaFieldValue(indexes.date);
-    const timeStr = getMisaFieldValue(indexes.startTime);
-    const durationStr = getMisaFieldValue(indexes.duration);
+    const dateStr = getMisaFieldByLabel(labels.date);
+    const timeStr = getMisaFieldByLabel(labels.startTime);
+    const durationStr = getMisaFieldByLabel(labels.duration);
     const duration = parseInt(durationStr) || 60;
     const { start, end } = parseDateTime(dateStr, timeStr, duration);
     const roomId = roomMap[roomName];
