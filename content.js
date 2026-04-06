@@ -59,9 +59,35 @@ function createPanel() {
   panel.id = 'misa-calendar-panel';
   panel.style.cssText = 'position: fixed; top: 10px; right: 10px; z-index: 10000; background: white; border: 2px solid #2e7d32; border-radius: 8px; padding: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); font-family: sans-serif; min-width: 240px;';
 
-  // Title bar với nút toggle
+  // Drag logic
+  let isDragging = false;
+  let dragOffsetX = 0;
+  let dragOffsetY = 0;
+
+  // Title bar với nút toggle + drag
   const titleBar = document.createElement('div');
-  titleBar.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;';
+  titleBar.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; cursor: grab; user-select: none;';
+
+  titleBar.addEventListener('mousedown', (e) => {
+    if (e.target.tagName === 'BUTTON') return;
+    isDragging = true;
+    titleBar.style.cursor = 'grabbing';
+    const rect = panel.getBoundingClientRect();
+    dragOffsetX = e.clientX - rect.left;
+    dragOffsetY = e.clientY - rect.top;
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    panel.style.left = (e.clientX - dragOffsetX) + 'px';
+    panel.style.top = (e.clientY - dragOffsetY) + 'px';
+    panel.style.right = 'auto';
+  });
+
+  document.addEventListener('mouseup', () => {
+    isDragging = false;
+    titleBar.style.cursor = 'grab';
+  });
 
   const title = document.createElement('div');
   title.textContent = 'Google Calendar - Book phòng';
