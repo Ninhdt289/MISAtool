@@ -87,8 +87,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if (request.action === 'bookRoom') {
     bookRoom(request.roomId, request.startTime, request.endTime, request.summary, request.description)
-      .then(event => {
-        sendResponse({ success: true, message: `✓ Đã book phòng thành công! Event: ${event.htmlLink}` });
+      .then(() => {
+        sendResponse({ success: true, message: '✓ Đã book phòng thành công!' });
       })
       .catch(err => sendResponse({ success: false, message: 'Lỗi book phòng: ' + err.message }));
     return true;
