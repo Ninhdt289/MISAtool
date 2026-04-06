@@ -59,17 +59,36 @@ function createPanel() {
   panel.id = 'misa-calendar-panel';
   panel.style.cssText = 'position: fixed; top: 10px; right: 10px; z-index: 10000; background: white; border: 2px solid #2e7d32; border-radius: 8px; padding: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); font-family: sans-serif; min-width: 240px;';
 
-  // Title
+  // Title bar với nút toggle
+  const titleBar = document.createElement('div');
+  titleBar.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;';
+
   const title = document.createElement('div');
   title.textContent = 'Google Calendar - Book phòng';
-  title.style.cssText = 'font-weight: bold; margin-bottom: 10px; font-size: 14px;';
-  panel.appendChild(title);
+  title.style.cssText = 'font-weight: bold; font-size: 14px;';
+  titleBar.appendChild(title);
+
+  const toggleBtn = document.createElement('button');
+  toggleBtn.textContent = '—';
+  toggleBtn.style.cssText = 'background: none; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 14px; padding: 0 6px; line-height: 20px; color: #666;';
+
+  const panelBody = document.createElement('div');
+  panelBody.id = 'misa-cal-body';
+
+  toggleBtn.onclick = () => {
+    const hidden = panelBody.style.display === 'none';
+    panelBody.style.display = hidden ? 'block' : 'none';
+    toggleBtn.textContent = hidden ? '—' : '+';
+    panel.style.minWidth = hidden ? '240px' : 'auto';
+  };
+  titleBar.appendChild(toggleBtn);
+  panel.appendChild(titleBar);
 
   // Dropdown chọn phòng
   const roomLabel = document.createElement('label');
   roomLabel.textContent = 'Chọn phòng họp:';
   roomLabel.style.cssText = 'font-size: 12px; color: #555; display: block; margin-bottom: 4px;';
-  panel.appendChild(roomLabel);
+  panelBody.appendChild(roomLabel);
 
   const roomSelect = document.createElement('select');
   roomSelect.id = 'misa-cal-room-select';
@@ -84,14 +103,14 @@ function createPanel() {
     option.textContent = name;
     roomSelect.appendChild(option);
   });
-  panel.appendChild(roomSelect);
+  panelBody.appendChild(roomSelect);
 
   // Hiển thị thông tin đọc từ MISA
   const infoDiv = document.createElement('div');
   infoDiv.id = 'misa-cal-info';
   infoDiv.style.cssText = 'font-size: 12px; color: #666; margin-bottom: 10px; padding: 6px; background: #f5f5f5; border-radius: 4px;';
   infoDiv.textContent = 'Bấm "Check" để đọc thông tin từ form MISA';
-  panel.appendChild(infoDiv);
+  panelBody.appendChild(infoDiv);
 
   // Nút Check
   const checkBtn = document.createElement('button');
@@ -169,8 +188,9 @@ function createPanel() {
     });
   };
 
-  panel.appendChild(checkBtn);
-  panel.appendChild(bookBtn);
+  panelBody.appendChild(checkBtn);
+  panelBody.appendChild(bookBtn);
+  panel.appendChild(panelBody);
   document.body.appendChild(panel);
 }
 
