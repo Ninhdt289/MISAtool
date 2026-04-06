@@ -1,15 +1,19 @@
+// config.js - Cấu hình cho MISA Calendar Extension
+// Được inject vào trang MISA trước content.js (xem manifest.json)
+
 const MISA_CALENDAR_CONFIG = {
-  selectors: {
-    form: 'form',
-    room: '#room-select',
-    start: '#start-time',
-    end: '#end-time',
-    summary: '#event-title',
-    description: '#event-description'
+  // Index của các input.dx-texteditor-input trên form MISA (từ trên xuống)
+  // 0: Loại lịch, 1: Ngày, 2: Giờ bắt đầu, 3: Thời lượng, 4: Địa điểm, 5: Phòng, 6: Mẫu đánh giá
+  fieldIndexes: {
+    date: 1,
+    startTime: 2,
+    duration: 3
   },
   defaultSummary: 'Phỏng vấn ứng viên',
+  // Mapping: Tên phòng → Google Calendar Resource ID
   roomCalendarIds: {
-    'Phòng 301': 'room301@company.com',
-    'Phòng 302': 'room302@company.com'
+    'Meeting room - Brazil': 'c_e538fc18198309709153fe1ba32a648c9bb5e81432b81d07e18dcfad44f8e7c4@group.calendar.google.com',
+    'Meeting room - India': 'c_6b8458f4dc618789375d36a94144d1507a53eafcb9079b598ad2cefc652baed8@group.calendar.google.com',
+    'Meeting room - Indonesia': 'c_a9f1be4f8fd8804280ec760affcd45b2953ccca8797d43528d8f49b63c9ccc3d@group.calendar.google.com'
   }
 };

@@ -1,25 +1,25 @@
-// background.js
+// background.js - Service worker xử lý Google Calendar API
+
 chrome.runtime.onInstalled.addListener(() => {
   console.log('MISA Calendar Extension installed');
 });
 
-// Handle OAuth
 function getAuthToken() {
   return new Promise((resolve, reject) => {
     chrome.identity.getAuthToken({ interactive: true }, (token) => {
-    if (chrome.runtime.lastError) {
-      reject(chrome.runtime.lastError);
-    } else {
-      resolve(token);
-    }
-  });
+      if (chrome.runtime.lastError) {
+        reject(new Error(chrome.runtime.lastError.message));
+      } else {
+        resolve(token);
+      }
+    });
   });
 }
 
-// Check room availability
+// Check phòng trống bằng FreeBusy API
 async function checkRoomAvailability(roomId, startTime, endTime) {
   const token = await getAuthToken();
-  const response = await fetch(`https://www.googleapis.com/calendar/v3/freeBusy`, {
+  const response = await fetch('https://www.googleapis.com/calendar/v3/freeBusy', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -32,43 +32,65 @@ async function checkRoomAvailability(roomId, startTime, endTime) {
     })
   });
   const data = await response.json();
-  return data.calendars[roomId].busy.length === 0;
+  if (data.error) {
+    throw new Error(data.error.message);
+  }
+  const busy = data.calendars[roomId].busy;
+  return { isFree: busy.length === 0, busy };
 }
 
-// Book room
-async function bookRoom(roomId, startTime, endTime, summary) {
+// Book phòng: tạo event trên calendar chính + thêm room là attendee
+async function bookRoom(roomId, startTime, endTime, summary, description) {
   const token = await getAuthToken();
-  const response = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${roomId}/events`, {
+  const event = {
+    summary: summary,
+    description: description || '',
+    start: { dateTime: startTime },
+    end: { dateTime: endTime },
+    attendees: [
+      { email: roomId, resource: true }
+    ]
+  };
+
+  const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({
-      summary: summary,
-      start: { dateTime: startTime },
-      end: { dateTime: endTime }
-    })
+    body: JSON.stringify(event)
   });
-  return await response.json();
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error.message);
+  }
+  return data;
 }
 
-// Handle messages from content script
+// Handle messages từ content script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'checkAndBook') {
-    (async () => {
-      try {
-        const isFree = await checkRoomAvailability(request.room, request.startTime, request.endTime);
-        if (isFree) {
-          await bookRoom(request.room, request.startTime, request.endTime, request.summary);
-          sendResponse({ message: '✓ Đã book phòng thành công!' });
+  if (request.action === 'checkRoom') {
+    checkRoomAvailability(request.roomId, request.startTime, request.endTime)
+      .then(result => {
+        if (result.isFree) {
+          sendResponse({ success: true, message: `✓ Phòng trống từ ${request.startTime} đến ${request.endTime}` });
         } else {
-          sendResponse({ message: '⚠ Phòng đã có người book!' });
+          const busyTimes = result.busy.map(b =>
+            `${new Date(b.start).toLocaleTimeString('vi-VN')} - ${new Date(b.end).toLocaleTimeString('vi-VN')}`
+          ).join(', ');
+          sendResponse({ success: false, message: `⚠ Phòng đã có người book: ${busyTimes}` });
         }
-      } catch (error) {
-        sendResponse({ message: 'Lỗi: ' + error.message });
-      }
-    })();
-    return true; // Keep message channel open
+      })
+      .catch(err => sendResponse({ success: false, message: 'Lỗi: ' + err.message }));
+    return true;
+  }
+
+  if (request.action === 'bookRoom') {
+    bookRoom(request.roomId, request.startTime, request.endTime, request.summary, request.description)
+      .then(event => {
+        sendResponse({ success: true, message: `✓ Đã book phòng thành công! Event: ${event.htmlLink}` });
+      })
+      .catch(err => sendResponse({ success: false, message: 'Lỗi book phòng: ' + err.message }));
+    return true;
   }
 });
