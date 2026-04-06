@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "MISA Calendar Integration",
+  "version": "1.0",
+  "description": "Chrome Extension to integrate MISA AMIS Tuyển dụng with Google Calendar for booking interview schedules.",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "identity"
+  ],
+  "host_permissions": [
+    "https://*.misa.vn/*",
+    "https://www.googleapis.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.misa.vn/*"],
+      "js": ["config.js", "content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "MISA Calendar"
+  },
+  "oauth2": {
+    "client_id": "your-google-client-id",
+    "scopes": [
+      "https://www.googleapis.com/auth/calendar.readonly",
+      "https://www.googleapis.com/auth/calendar.events"
+    ]
+  }
+}
